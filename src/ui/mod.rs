@@ -12,6 +12,9 @@ use tui::{
     Frame, Terminal,
     backend::{Backend, CrosstermBackend},
     layout::{Constraint, Direction, Layout, Rect},
+    widgets::{Paragraph, Block, Borders, BorderType},
+    text::{Span, Line, Text},
+    style::{Style, Modifier},
 };
 
 mod all_tasks_page;
@@ -226,32 +229,116 @@ fn render_app(
     delete_task_page: &mut Option<DeleteTaskPage>,
     current_page: &UIPage,
 ) {
-    let constraints = match (current_page, all_tasks_page.current_id) {
-        (UIPage::AllTasks | UIPage::EditTask, Some(_)) => {
-            [Constraint::Percentage(50), Constraint::Percentage(50)].as_ref()
-        }
-        _ => [Constraint::Percentage(100)].as_ref(),
-    };
+    // Split vertically: main UI and 1-line mode bar at the bottom
+    let vertical_chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([
+            Constraint::Min(0), // Main UI
+            Constraint::Length(1), // Mode bar
+        ].as_ref())
+        .split(f.area());
+
+    // Always split main UI into two columns: left for groups, right for todos
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
-        .constraints(constraints)
-        .split(f.area());
+        .constraints([Constraint::Percentage(25), Constraint::Percentage(75)].as_ref())
+        .split(vertical_chunks[0]);
 
     match current_page {
         UIPage::NewTask => {
-            task_page.ui(f, chunks[0], true);
+            all_tasks_page.ui(f, chunks[0], false);
+            task_page.ui(f, chunks[1], true);
+        }
+        UIPage::EditTask => {
+            all_tasks_page.ui(f, chunks[0], false);
+            task_page.ui(f, chunks[1], true);
         }
         UIPage::DeleteTask => {
-            delete_task_page.as_mut().unwrap().ui(f, chunks[0], true);
+            all_tasks_page.ui(f, chunks[0], false);
+            delete_task_page.as_mut().unwrap().ui(f, chunks[1], true);
         }
-        _ => match all_tasks_page.current_id {
-            Some(_) => {
-                all_tasks_page.ui(f, chunks[0], current_page == &UIPage::AllTasks);
-                task_page.ui(f, chunks[1], current_page == &UIPage::EditTask);
+        UIPage::AllTasks => {
+            all_tasks_page.ui(f, chunks[0], true);
+            // Always show the right panel
+            if let Some(_) = all_tasks_page.current_id {
+                task_page.ui(f, chunks[1], false);
+            } else {
+                // Show blank page with ASCII art, vertically centered
+                let ascii = r#"
+    (\_/)
+    ( •_•)
+   / >🍪
+   No task selected!
+"#;
+                let art_lines = ascii.trim_matches('\n').lines().count();
+                let panel_height = chunks[1].height as usize;
+                let top_padding = if panel_height > art_lines {
+                    (panel_height - art_lines) / 2
+                } else {
+                    0
+                };
+                let mut centered_ascii = String::new();
+                for _ in 0..top_padding {
+                    centered_ascii.push('\n');
+                }
+                centered_ascii.push_str(ascii.trim_matches('\n'));
+                let text = Text::from(centered_ascii);
+                let border_style = tui::style::Style::default().fg(tui::style::Color::White);
+                let border_type = BorderType::Plain;
+                let block = Block::default()
+                    .borders(Borders::ALL)
+                    .title("Task Details")
+                    .border_style(border_style)
+                    .border_type(border_type);
+                let paragraph = Paragraph::new(text)
+                    .block(block)
+                    .alignment(tui::layout::Alignment::Center);
+                f.render_widget(paragraph, chunks[1]);
             }
-            None => {
-                all_tasks_page.ui(f, chunks[0], true);
-            }
-        },
+        }
     }
+
+    // MODE bar at the bottom (styled)
+    let (mode_str, mode_color) = match current_page {
+        UIPage::NewTask | UIPage::EditTask => {
+            match task_page.input_mode {
+                InputMode::Insert => ("INSERT", task_page.get_secondary_color()),
+                InputMode::Normal => ("NORMAL", task_page.get_primary_color()),
+            }
+        }
+        UIPage::DeleteTask => {
+            match delete_task_page {
+                Some(dtp) => match dtp.input_mode {
+                    InputMode::Insert => ("INSERT", dtp.get_secondary_color()),
+                    InputMode::Normal => ("NORMAL", dtp.get_primary_color()),
+                },
+                None => ("NORMAL", all_tasks_page.get_primary_color()),
+            }
+        }
+        UIPage::AllTasks => ("NORMAL", all_tasks_page.get_primary_color()),
+    };
+    // Mode block
+    let mode_block = Span::styled(
+        format!(" {} ", mode_str),
+        Style::default()
+            .fg(tui::style::Color::Black)
+            .bg(mode_color)
+            .add_modifier(Modifier::BOLD),
+    );
+    // // Branch block (hardcoded as 'main')
+    // let branch_block = Span::styled(
+    //     "  main  ",
+    //     Style::default()
+    //         .fg(tui::style::Color::Black)
+    //         .bg(tui::style::Color::Gray)
+    //         .add_modifier(Modifier::BOLD),
+    // );
+    // Compose the line with left margin to align with the left panel
+    let left_margin = " ".repeat(chunks[0].x as usize);
+    let mode_bar = Paragraph::new(Line::from(vec![
+        Span::raw(left_margin),
+        mode_block,
+    ]))
+    .alignment(tui::layout::Alignment::Left);
+    f.render_widget(mode_bar, vertical_chunks[1]);
 }

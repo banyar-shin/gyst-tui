@@ -235,3 +235,4 @@ The system is designed to be extensible in several ways:
 -   Show/hide completed tasks
 -   Current group selection
 -   Task grouping preferences
+ 
