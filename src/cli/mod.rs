@@ -1,13 +1,13 @@
+use crate::app::App;
 use anyhow::Result;
 use clap::Parser;
-use crate::app::App;
 
-mod ls;
 mod add;
-mod delete;
+mod cli_utils;
 mod complete;
 mod config;
-mod cli_utils;
+mod delete;
+mod ls;
 
 // Shared enums and structs
 mod formats;
@@ -30,7 +30,7 @@ enum Command {
     /// Marks a task as complete or incomplete
     Complete(complete::Args),
     /// Sets default configurations
-    Config(config::Args)
+    Config(config::Args),
 }
 
 pub fn start_cli(app: App) -> Result<()> {
@@ -41,6 +41,6 @@ pub fn start_cli(app: App) -> Result<()> {
         Command::Add(args) => add::run(app, args),
         Command::Delete(args) => delete::run(app, args),
         Command::Complete(args) => complete::run(app, args),
-        Command::Config(args) => config::run(app, args)
+        Command::Config(args) => config::run(app, args),
     }
 }

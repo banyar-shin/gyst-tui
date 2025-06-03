@@ -45,7 +45,7 @@ impl App {
                 t.id = Some(new_id);
                 self.tasks.insert(new_id, t);
                 new_id
-            },
+            }
         };
         self.save_state();
         new_id

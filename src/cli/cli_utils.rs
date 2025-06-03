@@ -14,8 +14,14 @@ pub fn print_tasks(
     settings: &Settings,
 ) {
     match format {
-        Some(Format::Json) => println!("{}", serde_json::to_string(&tasks).expect("Failed to serialize tasks to JSON")),
-        Some(Format::JsonPretty) => println!("{}", serde_json::to_string_pretty(&tasks).expect("Failed to serialize tasks to JSON")),
+        Some(Format::Json) => println!(
+            "{}",
+            serde_json::to_string(&tasks).expect("Failed to serialize tasks to JSON")
+        ),
+        Some(Format::JsonPretty) => println!(
+            "{}",
+            serde_json::to_string_pretty(&tasks).expect("Failed to serialize tasks to JSON")
+        ),
         _ => {
             let longest_name = tasks.iter().map(|t| t.name.len()).max().unwrap_or(0);
             let longest_date = tasks

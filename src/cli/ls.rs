@@ -84,10 +84,7 @@ pub fn filter_by_exact_date(
     let tasks = match date {
         Some(date) => {
             let date = utils::parse_date(date.as_str(), settings)?;
-            tasks
-                .into_iter()
-                .filter(|(_, t)| t.date == date)
-                .collect()
+            tasks.into_iter().filter(|(_, t)| t.date == date).collect()
         }
         None => tasks,
     };
@@ -135,9 +132,7 @@ pub fn run(app: App, args: Args) -> Result<()> {
 
     let mut tasks_vec = tasks.values().collect::<Vec<_>>();
 
-    tasks_vec.sort_by(|a, b| {
-        a.date.cmp(&b.date).then_with(|| a.name.cmp(&b.name))
-    });
+    tasks_vec.sort_by(|a, b| a.date.cmp(&b.date).then_with(|| a.name.cmp(&b.name)));
 
     cli_utils::print_tasks(
         tasks_vec,

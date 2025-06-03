@@ -6,4 +6,3 @@ pub enum Format {
     JsonPretty,
     PlainText,
 }
-
