@@ -1,5 +1,5 @@
 use crate::utils;
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use crossterm::event::KeyCode;
 use serde::{Deserialize, Serialize};
 use std::fs;
@@ -421,7 +421,7 @@ impl SettingsBuilder {
                     fs::create_dir_all(path)?;
                 }
 
-                let todo_dir = config_dir.join("todui");
+                let todo_dir = config_dir.join("gyst-tui");
                 if !todo_dir.exists() {
                     fs::create_dir_all(&todo_dir)?;
                 }

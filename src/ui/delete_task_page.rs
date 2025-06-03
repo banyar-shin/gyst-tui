@@ -5,11 +5,11 @@ use crate::{
 };
 use std::{cell::RefCell, rc::Rc};
 use tui::{
+    Frame,
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     style::{Color, Style},
     text::{Line, Span, Text},
     widgets::{Block, BorderType, Borders, Paragraph, Wrap},
-    Frame,
 };
 use unicode_width::UnicodeWidthStr;
 

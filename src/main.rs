@@ -1,5 +1,5 @@
-use todui::configuration::get_configuration;
-use todui::{app::App, cli, ui};
+use gyst_tui::configuration::get_configuration;
+use gyst_tui::{app::App, cli, ui};
 
 fn main() {
     // Check args, if none, run ui, else run cli

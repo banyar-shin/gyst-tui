@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::{
-    configuration::{get_db_file, Settings},
+    configuration::{Settings, get_db_file},
     task::Task,
     utils,
 };

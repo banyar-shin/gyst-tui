@@ -12,9 +12,9 @@ use tui::layout::{Direction, Rect};
 use tui::text::{Line, Span};
 use tui::widgets::{Block, BorderType, Borders, Cell, Row, Table, Tabs};
 use tui::{
+    Frame,
     layout::{Constraint, Layout},
     style::{Color, Modifier, Style},
-    Frame,
 };
 
 pub struct AllTasksPage {

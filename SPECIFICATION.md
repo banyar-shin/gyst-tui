@@ -35,8 +35,8 @@ Gyst-TUI is a Terminal User Interface (TUI) and Command Line Interface (CLI) app
     -   Keybindings
     -   Task display preferences
 -   Configuration file locations:
-    -   Unix: `~/.config/todui/settings.json`
-    -   Windows: `C:\Users\<user>\AppData\Roaming\todui\settings.json`
+    -   Unix: `~/.config/gyst-tui/settings.json`
+    -   Windows: `C:\Users\<user>\AppData\Roaming\gyst-tui\settings.json`
 
 #### 3. User Interface (`src/ui/`)
 

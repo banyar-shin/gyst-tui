@@ -1,10 +1,10 @@
 [package]
-name = "todui"
-version = "0.1.4"
-edition = "2021"
-authors = ["Daniel M. <dmh672@gmail.com>"]
-description = "A CLI and TUI for your todos"
-repository = "https://github.com/danimelchor/todui"
+name = "gyst-tui"
+version = "0.0.1"
+edition = "2024"
+authors = ["Banyar S. <banyar.minshin@gmail.com>, Daniel M. <dmh672@gmail.com>"]
+description = "A TUI tool for personal task/project management."
+repository = "https://github.com/banyar-shin/gyst-tui"
 license = "MIT"
 
 [dependencies]
