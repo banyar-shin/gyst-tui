@@ -50,21 +50,23 @@ impl AllTasksPage {
 
     /// Returns the tasks that should be displayed on the page
     pub fn visible_tasks(&self) -> Vec<Task> {
-        let app = self.app.borrow_mut();
-        let tasks: Vec<&Task> = app.tasks.values().collect();
+        // Borrow app only once, clone the tasks, then drop the borrow
+        let tasks: Vec<Task> = {
+            let app = self.app.borrow();
+            app.tasks.values().cloned().collect()
+        };
 
-        let tasks: Vec<&Task> = if !self.show_hidden {
+        let tasks: Vec<Task> = if !self.show_hidden {
             tasks.into_iter().filter(|t| !t.complete).collect()
         } else {
             tasks
         };
 
         // Filter out tasks not in the current group
-        let tasks: Vec<&Task> = if let Some(group) = &self.current_group {
+        let tasks: Vec<Task> = if let Some(group) = &self.current_group {
             tasks
                 .into_iter()
-                .filter(|t| t.group.is_some())
-                .filter(|t| t.group.as_ref().unwrap() == group)
+                .filter(|t| t.group.as_ref() == Some(group))
                 .collect()
         } else {
             tasks
@@ -72,7 +74,6 @@ impl AllTasksPage {
 
         tasks
             .into_iter()
-            .cloned()
             .sorted_by(|a, b| a.date.cmp(&b.date))
             .collect()
     }
@@ -300,22 +301,11 @@ impl AllTasksPage {
         }
         Ok(())
     }
-
-    pub fn get_primary_color(&self) -> Color {
-        self.app.borrow().settings.colors.primary_color
-    }
-
-    pub fn get_secondary_color(&self) -> Color {
-        self.app.borrow().settings.colors.secondary_color
-    }
-
-    pub fn get_accent_color(&self) -> Color {
-        self.app.borrow().settings.colors.accent_color
-    }
 }
 
 impl Page for AllTasksPage {
     fn ui(&self, f: &mut Frame, area: Rect, focused: bool) {
+        let colors = &self.app.borrow().settings.colors;
         let chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints([Constraint::Length(3), Constraint::Min(0)].as_ref())
@@ -337,7 +327,7 @@ impl Page for AllTasksPage {
             // .style(Style::default().fg(self.get_primary_color()))
             .highlight_style(
                 Style::default()
-                    .fg(self.get_secondary_color())
+                    .fg(colors.secondary_color)
                     .add_modifier(Modifier::BOLD),
             );
         f.render_widget(tabs, chunks[0]);
@@ -359,7 +349,7 @@ impl Page for AllTasksPage {
                 group_title,
                 Style::default()
                     .add_modifier(Modifier::BOLD)
-                    .fg(self.get_accent_color()),
+                    .fg(colors.accent_color),
             ));
             rows.push(Row::new(vec![cell]));
             let pre_count = rows.len();
@@ -377,7 +367,7 @@ impl Page for AllTasksPage {
                 let title = format!("{} {} {} ", complete_icon, item.name, recurring_icon);
                 let title_style = match (item.complete, self.current_id) {
                     (_, Some(task_id)) if task_id == item.id.unwrap() => Style::default()
-                        .fg(self.get_secondary_color())
+                        .fg(colors.secondary_color)
                         .add_modifier(Modifier::BOLD),
                     (true, _) => Style::default().fg(Color::DarkGray),
                     _ => Style::default().fg(Color::White),
@@ -403,7 +393,7 @@ impl Page for AllTasksPage {
             }
         }
         let border_style = match focused {
-            true => Style::default().fg(self.get_primary_color()),
+            true => Style::default().fg(colors.primary_color),
             false => Style::default(),
         };
         let border_type = match focused {

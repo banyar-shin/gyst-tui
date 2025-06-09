@@ -12,12 +12,12 @@ use tui::{
     Frame, Terminal,
     backend::{Backend, CrosstermBackend},
     layout::{Constraint, Direction, Layout, Rect},
-    widgets::{Paragraph, Block, Borders, BorderType},
-    text::{Span, Line, Text},
-    style::{Style, Modifier},
+    text::Text,
+    widgets::{Block, BorderType, Borders, Paragraph},
 };
 
 mod all_tasks_page;
+mod bottombar;
 mod delete_task_page;
 mod task_page;
 
@@ -68,6 +68,8 @@ pub enum UIPage {
 pub enum InputMode {
     Insert,
     Normal,
+    Visual,
+    Command,
 }
 
 pub trait Page {
@@ -177,6 +179,18 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: App) -> Result<()> {
                             KeyCode::Backspace => dtp.remove_char(),
                             _ => {}
                         },
+                        InputMode::Visual => match key.code {
+                            _ if code == keybindings.enter_normal_mode => {
+                                dtp.input_mode = InputMode::Normal;
+                            }
+                            _ => {}
+                        },
+                        InputMode::Command => match key.code {
+                            _ if code == keybindings.enter_normal_mode => {
+                                dtp.input_mode = InputMode::Normal;
+                            }
+                            _ => {}
+                        },
                     }
                 }
                 UIPage::NewTask | UIPage::EditTask => match task_page.input_mode {
@@ -214,6 +228,18 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: App) -> Result<()> {
                         KeyCode::Backspace => task_page.remove_char(),
                         _ => {}
                     },
+                    InputMode::Visual => match key.code {
+                        _ if code == keybindings.enter_normal_mode => {
+                            task_page.input_mode = InputMode::Normal;
+                        }
+                        _ => {}
+                    },
+                    InputMode::Command => match key.code {
+                        _ if code == keybindings.enter_normal_mode => {
+                            task_page.input_mode = InputMode::Normal;
+                        }
+                        _ => {}
+                    },
                 },
             }
         }
@@ -232,10 +258,13 @@ fn render_app(
     // Split vertically: main UI and 1-line mode bar at the bottom
     let vertical_chunks = Layout::default()
         .direction(Direction::Vertical)
-        .constraints([
-            Constraint::Min(0), // Main UI
-            Constraint::Length(1), // Mode bar
-        ].as_ref())
+        .constraints(
+            [
+                Constraint::Min(0),    // Main UI
+                Constraint::Length(1), // Mode bar
+            ]
+            .as_ref(),
+        )
         .split(f.area());
 
     // Always split main UI into two columns: left for groups, right for todos
@@ -298,47 +327,14 @@ fn render_app(
         }
     }
 
-    // MODE bar at the bottom (styled)
-    let (mode_str, mode_color) = match current_page {
-        UIPage::NewTask | UIPage::EditTask => {
-            match task_page.input_mode {
-                InputMode::Insert => ("INSERT", task_page.get_secondary_color()),
-                InputMode::Normal => ("NORMAL", task_page.get_primary_color()),
-            }
-        }
-        UIPage::DeleteTask => {
-            match delete_task_page {
-                Some(dtp) => match dtp.input_mode {
-                    InputMode::Insert => ("INSERT", dtp.get_secondary_color()),
-                    InputMode::Normal => ("NORMAL", dtp.get_primary_color()),
-                },
-                None => ("NORMAL", all_tasks_page.get_primary_color()),
-            }
-        }
-        UIPage::AllTasks => ("NORMAL", all_tasks_page.get_primary_color()),
-    };
-    // Mode block
-    let mode_block = Span::styled(
-        format!(" {} ", mode_str),
-        Style::default()
-            .fg(tui::style::Color::Black)
-            .bg(mode_color)
-            .add_modifier(Modifier::BOLD),
+    // Render the bottom bar
+    bottombar::render_bottom_bar(
+        f,
+        vertical_chunks[1],
+        all_tasks_page,
+        task_page,
+        delete_task_page,
+        current_page,
+        &chunks,
     );
-    // // Branch block (hardcoded as 'main')
-    // let branch_block = Span::styled(
-    //     "  main  ",
-    //     Style::default()
-    //         .fg(tui::style::Color::Black)
-    //         .bg(tui::style::Color::Gray)
-    //         .add_modifier(Modifier::BOLD),
-    // );
-    // Compose the line with left margin to align with the left panel
-    let left_margin = " ".repeat(chunks[0].x as usize);
-    let mode_bar = Paragraph::new(Line::from(vec![
-        Span::raw(left_margin),
-        mode_block,
-    ]))
-    .alignment(tui::layout::Alignment::Left);
-    f.render_widget(mode_bar, vertical_chunks[1]);
 }

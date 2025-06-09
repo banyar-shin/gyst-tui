@@ -213,6 +213,10 @@ pub struct KeyBindings {
     #[serde(deserialize_with = "deserialize_key", serialize_with = "serialize_key")]
     pub enter_normal_mode: KeyCode,
     #[serde(deserialize_with = "deserialize_key", serialize_with = "serialize_key")]
+    pub enter_visual_mode: KeyCode,
+    #[serde(deserialize_with = "deserialize_key", serialize_with = "serialize_key")]
+    pub enter_command_mode: KeyCode,
+    #[serde(deserialize_with = "deserialize_key", serialize_with = "serialize_key")]
     pub go_back: KeyCode,
     #[serde(deserialize_with = "deserialize_key", serialize_with = "serialize_key")]
     pub open_link: KeyCode,
@@ -270,6 +274,8 @@ impl KeyBindings {
             save_changes: KeyCode::Enter,
             enter_insert_mode: KeyCode::Char('i'),
             enter_normal_mode: KeyCode::Esc,
+            enter_visual_mode: KeyCode::Char('v'),
+            enter_command_mode: KeyCode::Char(':'),
             go_back: KeyCode::Esc,
             open_link: KeyCode::Enter,
             next_group: KeyCode::Char('l'),
@@ -292,6 +298,8 @@ impl Default for KeyBindings {
             save_changes: KeyCode::Enter,
             enter_insert_mode: KeyCode::Char('i'),
             enter_normal_mode: KeyCode::Esc,
+            enter_visual_mode: KeyCode::Char('v'),
+            enter_command_mode: KeyCode::Char(':'),
             go_back: KeyCode::Esc,
             open_link: KeyCode::Enter,
             next_group: KeyCode::Right,
@@ -340,14 +348,62 @@ pub struct Colors {
         deserialize_with = "deserialize_color"
     )]
     pub accent_color: tui::style::Color,
+    #[serde(
+        serialize_with = "serialize_color",
+        deserialize_with = "deserialize_color"
+    )]
+    pub neutral_light: tui::style::Color,
+    #[serde(
+        serialize_with = "serialize_color",
+        deserialize_with = "deserialize_color"
+    )]
+    pub neutral_dark: tui::style::Color,
+    #[serde(
+        serialize_with = "serialize_color",
+        deserialize_with = "deserialize_color"
+    )]
+    pub foreground_light: tui::style::Color,
+    #[serde(
+        serialize_with = "serialize_color",
+        deserialize_with = "deserialize_color"
+    )]
+    pub foreground_dark: tui::style::Color,
+    #[serde(
+        serialize_with = "serialize_color",
+        deserialize_with = "deserialize_color"
+    )]
+    pub normal_mode_color: tui::style::Color,
+    #[serde(
+        serialize_with = "serialize_color",
+        deserialize_with = "deserialize_color"
+    )]
+    pub insert_mode_color: tui::style::Color,
+    #[serde(
+        serialize_with = "serialize_color",
+        deserialize_with = "deserialize_color"
+    )]
+    pub visual_mode_color: tui::style::Color,
+    #[serde(
+        serialize_with = "serialize_color",
+        deserialize_with = "deserialize_color"
+    )]
+    pub command_mode_color: tui::style::Color,
 }
 
 impl Colors {
     fn default() -> Self {
         Colors {
-            primary_color: tui::style::Color::LightGreen,
-            secondary_color: tui::style::Color::LightYellow,
-            accent_color: tui::style::Color::LightBlue,
+            primary_color: tui::style::Color::Red,
+            secondary_color: tui::style::Color::Green,
+            accent_color: tui::style::Color::Blue,
+            neutral_light: tui::style::Color::Rgb(81, 73, 68),
+            neutral_dark: tui::style::Color::Rgb(50, 48, 47),
+            foreground_light: tui::style::Color::White,
+            foreground_dark: tui::style::Color::Black,
+            normal_mode_color: tui::style::Color::Gray,
+            insert_mode_color: tui::style::Color::LightGreen,
+            visual_mode_color: tui::style::Color::LightBlue,
+            command_mode_color: tui::style::Color::LightRed,
         }
     }
 }

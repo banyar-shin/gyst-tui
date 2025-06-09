@@ -153,6 +153,8 @@ impl Page for DeleteTaskPage {
         let style = match self.input_mode {
             InputMode::Normal => Style::default(),
             InputMode::Insert => Style::default().fg(self.get_primary_color()),
+            InputMode::Visual => Style::default().fg(self.get_primary_color()),
+            InputMode::Command => Style::default().fg(self.get_primary_color()),
         };
         let input = Paragraph::new(curr_text)
             .style(style)
